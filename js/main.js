@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async() => {
   async function registerSW() {
     console.log('running');
     if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('../sw.js')
+      navigator.serviceWorker.register('./sw.js')
       .then((registration)=>{
         Sw = registration.installing || registration.waiting || registration.active;
         console.log('service worker installed', Sw);
