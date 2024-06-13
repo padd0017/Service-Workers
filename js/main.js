@@ -58,12 +58,9 @@ document.addEventListener('DOMContentLoaded', async() => {
     console.log('working');
     showCards(cardData);
     if(navigator.serviceWorker.controller){
-      navigator.serviceWorker.controller.postMessage({
-        type: 'goBack',
-        cacheData: cardData
-      })
+      navigator.serviceWorker.controller.postMessage({type: 'goBack', cacheData: cardData})
     }
-   }
+  }
   
   async function showCards(data) {
     cards.innerHTML = '';
@@ -85,40 +82,27 @@ document.addEventListener('DOMContentLoaded', async() => {
     let sin=document.createElement("p");
     sin.textContent= social_insurance_number;
 
-   
-
-   cardData.push({
-      uid: uid,
-      username: username,
-      avatar: avatar,
-      social_insurance_number: social_insurance_number
-    })
+    cardData.push({ uid: uid, username: username, avatar: avatar, social_insurance_number: social_insurance_number})
 
     card.append(user);
     card.append(sin);
     df.append(card);
     })
-   
     cards.append(df);
   }
-
 
   function handleCardClicks(ev) {
     if(ev.target.closest('.card')){
       console.log('clicking on card')
       let card = ev.target.closest('.card').getAttribute('data-ref')
-      console.log(card);
       window.location.hash = `#${card}`;
-      // setRandomColor();
+      setRandomColor();
     }
   }
   
   function sendData(data) {
   if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      type: 'Cache-data',
-      payload: data
-    });
+    Sw.postMessage({type: 'Cache-data', payload: data });
   } else {
     console.log('No active Service Worker to send message to.');
   }
@@ -130,10 +114,8 @@ document.addEventListener('DOMContentLoaded', async() => {
 
 function handleHashChange() {
    hash = window.location.hash.substring(1);
-  console.log(hash)
   if (hash === '' || hash === '#') {
     cards.querySelectorAll('.card').forEach(card => card.style.display = 'unset');
-
     } else {
       cards.querySelectorAll('.card').forEach(card => {
         let specificCard = card.getAttribute('data-ref');
@@ -143,40 +125,32 @@ function handleHashChange() {
           else {
             card.style.display = 'none';
       }
-      });
+    });
+  }
+  sendMessageToSW(hash);
+}
+
+      // setRandomColor()
+    function getRandomColor(){
+    let letters = '0123456789ABCDEF';
+    let color = '#';
+      for(let i=0; i < 6; i++){
+        color += letters[Math.floor(Math.random()*16)]; 
       }
-      sendMessageToSW(hash);
-      setRandomColor()
-      }
-
-
-      function getRandomColor(){
-        let letters = '0123456789ABCDEF';
-        let color = '#';
-      
-        for(let i=0; i < 6; i++){
-          color += letters[Math.floor(Math.random()*16)];
-        }
-
-        
-        return color
+        return color;
       }
       
       function setRandomColor(){
         if(navigator.serviceWorker.controller){
-          navigator.serviceWorker.controller.postMessage({ type: 'changeColor', color: getRandomColor()})
+          Sw.postMessage({ type: 'changeColor', color: getRandomColor()})
         }
-        
       }
-      
 
     function sendMessageToSW(uid) {
       if(navigator.serviceWorker.controller){
-        navigator.serviceWorker.controller.postMessage({ Func: 'changeUser', uid: uid})
+        Sw.postMessage({ Func: 'changeUser', uid: uid})
       }
     }
-
-
 
 function receiveMessageFromSW(ev) {              
     const data = ev.data;
@@ -190,10 +164,10 @@ function receiveMessageFromSW(ev) {
     const {cacheData} = data;
     console.log(cacheData);
      showCards(cacheData);
-  } 
-
+  }
   else if(data.type === 'changeColor'){
-    h2.style.color = getRandomColor();
+    console.log(data);
+    h2.style.color =data.color;
   }
 }
 

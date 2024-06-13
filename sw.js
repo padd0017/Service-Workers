@@ -15,17 +15,15 @@ self.addEventListener('install', (ev) => self.skipWaiting() );
           
 self.addEventListener('message', (ev) => {
   if(ev.data.type === 'Cache-data'){
-    console.log(ev.data.payload);
      cachedData(ev.data.payload);
+
   } else if(ev.data.Func === 'changeUser'){
+sendMessageToMain({func: 'changeUser', uid: ev.data.uid});
 
-    sendMessageToMain({func: 'changeUser', uid: ev.data.uid});
   } else if(ev.data.type === 'goBack'){
-
     sendMessageToMain({type: 'goBack', cacheData: ev.data.cacheData});
+    
   } else if(ev.data.type === 'changeColor'){
-
-    console.log(ev.source.id);
     sendMessageToMain({type: 'changeColor', color: ev.data.color}, ev.source.id);
   }
 });
@@ -48,27 +46,17 @@ async function cachedData(data) {
 }
 
 async function sendMessageToMain(message, clientId){
-  console.log(clientId);
-  
   let Clients = []
     if(clientId){
-      // let particularClient = await clients.get(clientId)
-
       const matched = await clients.matchAll({includeUncontrolled: true});
-      
-      Clients = matched.filter((item)=>item.visibilityState == 'hidden')
-      console.log(Clients)
-      // Clients.push(particularClient);
-      console.log("this is the color function")
-    } 
-    else {
-      console.log("this should not work if clietid exists")
-      
-      Clients = await clients.matchAll({includeUncontrolled: true});
-      console.log("message to all")
+      Clients = matched.filter((item)=>{
+       return item.id !== clientId
+      })
+    } else {
+       Clients = await clients.matchAll({includeUncontrolled: true});
     }
+
       return Promise.all(Clients.map(client => {
-      console.log("messages");
       client.postMessage(message);
   }));
 }
